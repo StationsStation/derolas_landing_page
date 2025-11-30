@@ -1,0 +1,87 @@
+openapi: 3.1.0
+info:
+  title: Parameters API
+  version: 1.0.0
+
+components:
+  schemas:
+    Parameter:
+      type: object
+      description: A configurable parameter
+      required:
+        - key
+        - value
+        - type
+        - description
+      properties:
+        key:
+          type: string
+          description: Unique name of the parameter
+        value:
+          type: string
+          description: Current value of the parameter
+        type:
+          type: string
+          description: Data type of the parameter (e.g., string, integer, boolean)
+        description:
+          type: string
+          description: Human readable description of the parameter
+
+    ParameterUpdateRequest:
+      type: object
+      description: Payload for updating a parameter
+      required:
+        - key
+        - value
+      properties:
+        key:
+          type: string
+          description: Name of the parameter to update
+        value:
+          type: string
+          description: New value to assign
+
+    ErrorResponse:
+      type: object
+      description: Error response
+      properties:
+        error:
+          type: string
+          description: Error message
+
+paths:
+  /parameters:
+    get:
+      summary: Get all parameters
+      responses:
+        '200':
+          description: List of parameters
+          content:
+            application/json:
+              schema:
+                type: array
+                description: Array of all available parameters
+                items:
+                  $ref: '#/components/schemas/Parameter'
+
+    post:
+      summary: Update a parameter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParameterUpdateRequest'
+      responses:
+        '200':
+          description: Parameter updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Parameter'
+        '404':
+          description: Parameter not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'

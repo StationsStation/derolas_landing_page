@@ -1,0 +1,19 @@
+[project]
+name = "pearl-ui"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "8baller",email = "8baller@station.codes"}
+]
+readme = "README.md"
+requires-python = ">=3.11,<4"
+dependencies = [
+    "typing-extensions (>=4.15.0,<5.0.0)",
+    "flask (>=3.1.2,<4.0.0)",
+    "flask-cors (>=6.0.1,<7.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
