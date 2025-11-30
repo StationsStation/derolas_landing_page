@@ -11,23 +11,23 @@ dev:
 preview:
 	npm run preview
 lint:
-	ruff check backend
+	poetry run ruff check backend
 	npm run lint
 format:
-	ruff check backend --fix --unsafe-fixes
+	poetry run ruff check backend --fix --unsafe-fixes
 	npm run format
 check:
 	npm run check
 test:
 	npm run test
-	pytest tests
+	poetry run pytest tests
 
 check-diff:
 	git diff --exit-code
 
 codegen:
-	datamodel-codegen --input open-api-spec.yaml --output backend/model.py
-	python -m backend.generate
+	poetry run datamodel-codegen --input open-api-spec.yaml --output backend/model.py
+	poetry run python -m backend.generate
 	npx openapi-typescript-codegen --input open-api-spec.yaml --output src/lib/api --client axios
 
 release:
@@ -44,6 +44,6 @@ build-docker:
 	docker build -t $$USER_NAME/$$REPO_NAME:latest .
 
 backend-api:
-	flask --app backend/app.py run --host=0.0.0.0
+	poetry run flask --app backend/app.py run --host=0.0.0.0
 
 all: codegen test format lint check build
