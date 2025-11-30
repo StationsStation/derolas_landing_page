@@ -3,12 +3,6 @@
 </svelte:head>
 
 <script lang="ts">
-	const navLinks = [
-		{ label: 'Services', href: '/services' },
-		{ label: 'Stats', href: '/stats' },
-		{ label: 'Team', href: '/team' }
-	];
-
 	const channels = [
 		{ label: 'Telegram', href: 'https://t.me', icon: '↗' },
 		{ label: 'X', href: 'https://x.com', icon: '↗' }
@@ -28,25 +22,8 @@
 </script>
 
 <main class="page">
-	<div class="halo halo-1" aria-hidden="true" />
-	<div class="halo halo-2" aria-hidden="true" />
-
-	<header class="nav">
-		<div class="brand">
-			<div class="brand-mark">
-				<div class="brand-icon" />
-			</div>
-			<span class="brand-name">Derolas</span>
-		</div>
-
-		<nav class="nav-links" aria-label="Primary">
-			{#each navLinks as link}
-				<a class="nav-link" href={link.href}>{link.label}</a>
-			{/each}
-		</nav>
-
-		<a class="cta" href="/contact">Talk to the Team</a>
-	</header>
+	<div class="halo halo-1" aria-hidden="true"></div>
+	<div class="halo halo-2" aria-hidden="true"></div>
 
 	<section class="hero">
 		<h1>Talk to the Derolas Team</h1>
@@ -102,127 +79,9 @@
 			<button class="cta" type="submit">Send Message</button>
 		</form>
 	</section>
-
-	<footer class="footer">
-		<span>© Derolas 2025</span>
-		<span aria-hidden="true">•</span>
-		<a class="nav-link" href="/contact">Contact</a>
-	</footer>
 </main>
 
 <style>
-	:global(body) {
-		background: #0b1210;
-		color: #e4f3ea;
-	}
-
-	.page {
-		min-height: 100vh;
-		position: relative;
-		padding: 32px clamp(20px, 4vw, 56px) 80px;
-		background: radial-gradient(circle at 20% 20%, rgba(42, 242, 112, 0.08), transparent 25%),
-			radial-gradient(circle at 80% 10%, rgba(42, 242, 112, 0.08), transparent 20%),
-			radial-gradient(circle at 50% 50%, rgba(42, 242, 112, 0.05), rgba(11, 18, 16, 0.7)),
-			#0b1210;
-		overflow: hidden;
-	}
-	.halo {
-		position: absolute;
-		inset: 0;
-		background: radial-gradient(circle, rgba(42, 242, 112, 0.05) 0%, transparent 45%);
-		filter: blur(60px);
-		pointer-events: none;
-	}
-	.halo-1 {
-		top: -30%;
-		left: -10%;
-	}
-	.halo-2 {
-		bottom: -40%;
-		right: -10%;
-	}
-
-	.nav {
-		display: grid;
-		grid-template-columns: 1fr auto 1fr;
-		align-items: center;
-		max-width: 1200px;
-		margin: 0 auto 48px;
-		position: relative;
-		z-index: 1;
-	}
-	.brand {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-	}
-	.brand-mark {
-		width: 44px;
-		height: 44px;
-		border-radius: 14px;
-		background: linear-gradient(140deg, #11221b, #0b1712);
-		border: 1px solid #193025;
-		display: grid;
-		place-items: center;
-		box-shadow: 0 0 0 1px rgba(42, 242, 112, 0.08), 0 18px 40px rgba(0, 0, 0, 0.45);
-	}
-	.brand-icon {
-		width: 20px;
-		height: 24px;
-		border: 2px solid #2af270;
-		border-radius: 6px 16px 10px 10px;
-		position: relative;
-	}
-	.brand-icon::after {
-		content: '';
-		position: absolute;
-		width: 14px;
-		height: 10px;
-		border: 2px solid #2af270;
-		border-radius: 10px;
-		top: 8px;
-		left: -4px;
-	}
-	.brand-name {
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: #9deab7;
-	}
-
-	.nav-links {
-		display: flex;
-		justify-content: center;
-		gap: 28px;
-	}
-	.nav-link {
-		color: #d8e9df;
-		text-decoration: none;
-		font-weight: 500;
-		font-size: 0.97rem;
-		transition: color 150ms ease;
-	}
-	.nav-link:hover {
-		color: #2af270;
-	}
-
-	.cta {
-		justify-self: end;
-		padding: 10px 18px;
-		border-radius: 999px;
-		background: linear-gradient(90deg, #38ff81, #2af270);
-		color: #0b1210;
-		font-weight: 700;
-		text-decoration: none;
-		border: 1px solid #193025;
-		box-shadow: 0 12px 24px rgba(42, 242, 112, 0.28);
-		transition: transform 120ms ease, box-shadow 120ms ease;
-	}
-	.cta:hover {
-		transform: translateY(-1px);
-		box-shadow: 0 16px 32px rgba(42, 242, 112, 0.36);
-	}
-
 	.hero {
 		text-align: center;
 		margin-bottom: 28px;
@@ -329,27 +188,7 @@
 		padding: 12px 24px;
 	}
 
-	.footer {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		gap: 10px;
-		padding: 60px 0 12px;
-		color: #7d978b;
-		font-size: 0.95rem;
-	}
-
 	@media (max-width: 800px) {
-		.nav {
-			grid-template-columns: 1fr 1fr;
-			row-gap: 12px;
-		}
-		.nav-links {
-			grid-column: 1 / -1;
-		}
-		.cta {
-			justify-self: start;
-		}
 		.channel-card {
 			grid-template-columns: 1fr;
 		}
