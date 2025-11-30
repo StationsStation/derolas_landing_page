@@ -1,13 +1,9 @@
 /* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
-
-/**
- * Error response
- */
-export type ErrorResponse = {
-	/**
-	 * Error message
-	 */
-	error?: string;
+ 
+export type TimeSeriesPoint = {
+    timestamp: string;
+    value: number;
 };
+

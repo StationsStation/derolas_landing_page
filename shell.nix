@@ -38,7 +38,7 @@ mkShell {
     set -e
     export LD_LIBRARY_PATH="${pkgs.stdenv.cc.cc.lib.outPath}/lib:${pkgs.pythonManylinuxPackages.manylinux2014Package}/lib:$LD_LIBRARY_PATH";
     echo 'Spinning up Python Virtual Environment in .nix-venv directory 🐍'
-    ${pkgs.python311.interpreter} -m venv .nix-venv
+    ${pkgs.python312.interpreter} -m venv .nix-venv
     export PATH=$PWD/.nix-venv/bin:$PATH
 
     echo "Python version: $(which python) $(python --version)"
