@@ -1,5 +1,5 @@
 [project]
-name = "pearl-ui"
+name = "derolas_landing_page"
 version = "0.1.0"
 description = ""
 authors = [
@@ -8,12 +8,27 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.11,<4"
 dependencies = [
-    "typing-extensions (>=4.15.0,<5.0.0)",
+    "typing-extensions (==4.12.2)",
     "flask (>=3.1.2,<4.0.0)",
-    "flask-cors (>=6.0.1,<7.0.0)"
+    "flask-cors (>=6.0.1,<7.0.0)",
+    "datamodel-code-generator (>=0.36.0,<0.37.0)",
+    "pytest (>=9.0.1,<10.0.0)",
 ]
+[tool.poetry]
+package-mode = false
 
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+# We ignore the warnings from 3rd party libraries
+filterwarnings = [
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+]
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.14.7"
+

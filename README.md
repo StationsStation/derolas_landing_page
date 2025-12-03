@@ -1,17 +1,13 @@
-# sv
+# Derolas Landing Page
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+This is a SvelteKit project bootstrapped with `create-svelte` and enhanced with [shadcn/ui](https://shadcn-svelte.com/) components.
 
-## Creating a project
+It has a backend API built with Flask.
 
-If you're seeing this, you've probably already done this step. Congrats!
 
+## To Install
 ```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+make install
 ```
 
 ## Developing
@@ -57,4 +53,11 @@ Note: you must ensure that the `GITHUB_TOKEN` environment variable is set with a
 
 ```sh
 make release
+```
+
+
+## Developement Server.
+To start the development server, use the command:
+```sh
+make backend-api
 ```
