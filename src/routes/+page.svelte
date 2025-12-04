@@ -6,6 +6,7 @@
 		href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap"
 		rel="stylesheet"
 	/>
+	<script src="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.5.2/dist/unicornStudio.umd.js"></script>
 </svelte:head>
 
 <script lang="ts">
@@ -151,15 +152,53 @@
 	];
 </script>
 
+
 <main class="page">
+
+	<!-- <div
+	  class="unicorn-embed"
+	  data-us-project-src="/green-beam.json"
+	  data-us-scale="1"
+	  data-us-dpi="1.5"
+	  data-us-lazyload="true"
+	  data-us-alttext="Welcome to Unicorn Studio"
+	  data-us-arialabel="This is a canvas scene"
+	></div> -->
 	<div class="halo halo-1" aria-hidden="true"></div>
 	<div class="halo halo-2" aria-hidden="true"></div>
+<section class="hero">
+	<div class="graphics">
+		<div
+			class="uni"
+			id="unicorn-left"
+			data-us-project-src="/white-beam.json"
+			data-us-lazyload="true"
+		></div>
 
-	<section class="hero">
+		<div
+			class="uni"
+			id="unicorn-right"
+			data-us-project-src="/green-beam.json"
+			data-us-lazyload="true"
+		></div>
+	</div>
+
+	<div class="copy">
 		<h1>Turn Arbitrage Into Shared Liquidity</h1>
 		<p>Derolas coordinates a decentralized network of AI agents to keep token markets tight.</p>
 		<a class="cta" href="/contact">Talk to the Team</a>
-	</section>
+	</div>
+
+	<script>
+		UnicornStudio.init()
+			.then((scenes) => {
+				console.log('Unicorn Studio scenes initialized:', scenes);
+			})
+			.catch((err) => {
+				console.error(err);
+			});
+	</script>
+</section>
 
 	<section class="logo-card" aria-label="Derolas emblem">
 		<div class="logo-frame">
@@ -589,4 +628,48 @@
 			grid-template-columns: 1fr;
 		}
 	}
+.hero {
+	position: relative;
+	min-height: 100vh;
+	overflow: hidden;
+}
+
+.graphics {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	justify-content: space-between;
+	pointer-events: none;
+	z-index: 1;
+
+	-webkit-mask-image: linear-gradient(
+		to right,
+		transparent 0%,
+		black 15%,
+		black 45%,
+		transparent 100%
+	);
+	mask-image: linear-gradient(
+		to right,
+		transparent 0%,
+		black 15%,
+		black 85%,
+		transparent 100%
+	);
+}
+
+.uni {
+	width: 48%;
+	height: 100%;
+}
+
+.copy {
+	position: relative;
+	z-index: 2;
+	max-width: 600px;
+	margin: 0 auto;
+	padding-top: 15vh;
+	text-align: center;
+}
+
 </style>
