@@ -17,6 +17,9 @@ mkShell {
     ncurses
     stdenv.cc
     stdenv.cc.libc stdenv.cc.libc_dev
+    nodejs_22
+    corepack_22
+
   ];
 
   buildInputs = [
@@ -30,6 +33,8 @@ mkShell {
     pkgs.python312Packages.cytoolz
     pkgs.pythonManylinuxPackages.manylinux2014Package
     pkgs.cmake
+    pkgs.nodejs_22
+    pkgs.corepack_22
   ];
 
   # NIX_LD = builtins.readFile "${stdenv.cc}/nix-support/dynamic-linker";
