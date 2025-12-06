@@ -149,23 +149,25 @@
 }
 
 :global(.cta) {
+	appearance: none;
+	cursor: pointer;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	padding: 12px 20px;
 	border-radius: 14px;
-	background: linear-gradient(90deg, #32ff7a, #20d95e);
-	color: #0b1210;
+	background: linear-gradient(115deg, #2af270, #16c45c);
+	color: #06140d;
 	font-weight: 700;
 	text-decoration: none;
-	border: 1px solid #128c3f;
-	box-shadow: 0 12px 24px rgba(42, 242, 112, 0.26);
+	border: 1px solid #0fa84a;
+	box-shadow: 0 12px 24px rgba(42, 242, 112, 0.32);
 	transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
 }
 :global(.cta:hover) {
 	transform: translateY(-1px);
-	box-shadow: 0 16px 32px rgba(42, 242, 112, 0.34);
-	filter: brightness(1.03);
+	box-shadow: 0 16px 32px rgba(42, 242, 112, 0.4);
+	filter: brightness(1.04);
 }
 
 :global(.ghost) {

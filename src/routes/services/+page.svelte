@@ -7,8 +7,7 @@
 	import markIcon from '$lib/assets/mark_icon.svg';
 	import robotIcon from '$lib/assets/robot_icon.svg';
 	import groupIcon from '$lib/assets/group_icon.svg';
-	import xLogo from '$lib/assets/x_logo.svg';
-	import telegramIcon from '$lib/assets/telegram_icon.svg';
+	import { goto } from '$app/navigation';
 
 	const highlightServices = [
 		{
@@ -50,7 +49,7 @@
 				liquidity programs, with clear on-chain incentives and open source infrastructure.
 			</p>
 			<div class="hero-actions">
-				<a class="cta" href="/contact">Talk to the Team</a>
+				<button type="button" class="cta" on:click={() => goto('/contact')}>Talk to the Team</button>
 				<a class="ghost" href="/stats">See How Derolas Works</a>
 			</div>
 		</div>
@@ -71,7 +70,7 @@
 	</section>
 
 	<section class="highlight-grid">
-		{#each highlightServices as service}
+		{#each highlightServices as service (service.title)}
 			<article class="highlight-card">
 				<div class="highlight-visual" aria-hidden="true">
 					<img src={service.icon} alt={service.title} />
@@ -89,7 +88,7 @@
 			<h2>Services for Token Teams</h2>
 		</div>
 		<div class="service-grid">
-			{#each serviceTiles as tile}
+			{#each serviceTiles as tile (tile.title)}
 				<article class="service-card">
 					<div class="service-icon" aria-hidden="true">
 						<img src={tile.icon} alt="" />

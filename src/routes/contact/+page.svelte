@@ -35,7 +35,7 @@
 			<span aria-hidden="true">→</span>
 		</div>
 		<div class="channel-actions">
-			{#each channels as channel}
+			{#each channels as channel (channel.href)}
 				<a class="chip" href={channel.href} target="_blank" rel="noreferrer">
 					{channel.label}
 					<span aria-hidden="true">{channel.icon}</span>
