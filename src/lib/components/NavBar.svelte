@@ -1,6 +1,5 @@
 <script lang="ts">
 	import derolasLogo from '$lib/assets/derolas_logo.svg';
-	import { goto } from '$app/navigation';
 
 	const navLinks = [
 		{ label: 'Services', href: '/services' },
@@ -77,8 +76,8 @@
 		.nav-links {
 			grid-column: 1 / -1;
 		}
-		.cta {
-			justify-self: start;
+		.ghost {
+			display: none;
 		}
 	}
 </style>

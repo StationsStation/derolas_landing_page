@@ -24,7 +24,7 @@
 		justify-content: center;
 		align-items: center;
 		gap: 10px;
-		padding: 32px 0 24px;
+		padding: 32px 0;
 		color: #7d978b;
 		font-size: 0.95rem;
 	}

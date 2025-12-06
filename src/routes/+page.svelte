@@ -1,7 +1,7 @@
 <svelte:head>
 	<title>Derolas | Liquidity Network</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
 	<link
 		href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap"
 		rel="stylesheet"
@@ -10,6 +10,7 @@
 </svelte:head>
 
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import DiagramSection from '$lib/components/DiagramSection.svelte';
 	import WhyCard from '$lib/components/WhyCard.svelte';
 	import derolasLogoPile from '$lib/assets/logo_pile.svg';
@@ -20,61 +21,61 @@
 
 	const whyCardsRow1 = whyCards.slice(0, 3);
 	const whyCardsRow2 = whyCards.slice(3);
+
+	onMount(() => {
+		const tryInit = () => {
+			const unicorn = window.UnicornStudio;
+			if (!unicorn?.init) return false;
+			unicorn.init().catch((err: unknown) => console.error(err));
+			return true;
+		};
+		if (tryInit()) return;
+		const retry = setInterval(() => {
+			if (tryInit()) clearInterval(retry);
+		}, 250);
+		return () => clearInterval(retry);
+	});
 </script>
 
 
 <main class="page">
-
-	<!-- <div
-	  class="unicorn-embed"
-	  data-us-project-src="/green-beam.json"
-	  data-us-scale="1"
-	  data-us-dpi="1.5"
-	  data-us-lazyload="true"
-	  data-us-alttext="Welcome to Unicorn Studio"
-	  data-us-arialabel="This is a canvas scene"
-	></div> -->
 	<div class="halo halo-1" aria-hidden="true"></div>
 	<div class="halo halo-2" aria-hidden="true"></div>
-<section class="hero">
-	<div class="graphics">
+	<div class="uni-shell" aria-hidden="true">
 		<div
-			class="uni"
+			class="uni-bg uni-left unicorn-embed"
+			aria-hidden="true"
 			id="unicorn-left"
 			data-us-project-src="/white-beam.json"
 			data-us-lazyload="true"
 		></div>
-
 		<div
-			class="uni"
+			class="uni-bg uni-right unicorn-embed"
+			aria-hidden="true"
 			id="unicorn-right"
 			data-us-project-src="/green-beam.json"
 			data-us-lazyload="true"
 		></div>
+		<div class="uni-mask" aria-hidden="true"></div>
+		<div class="uni-mask-bottom" aria-hidden="true"></div>
+		<div class="uni-mask-top" aria-hidden="true"></div>
 	</div>
+
+
+<section class="hero">
 
 	<div class="copy">
 		<h1>Turn Arbitrage Into Shared Liquidity</h1>
-		<p>Derolas coordinates a decentralized network of AI agents to keep token markets tight.</p>
+		<p class="pb-6">Derolas coordinates a decentralized network of AI agents to keep token markets tight.</p>
 		<a class="ghost" href="/contact">Talk to the Team</a>
 	</div>
-
-	<script>
-		UnicornStudio.init()
-			.then((scenes) => {
-				console.log('Unicorn Studio scenes initialized:', scenes);
-			})
-			.catch((err) => {
-				console.error(err);
-			});
-	</script>
 </section>
 
 	<section class="logo-card" aria-label="Derolas emblem">
 		<img src={derolasLogoPile} alt="Derolas logo" class="logo-img" />
 	</section>
 
-	<section class="stats">
+	<section class="stats mt-[80px]">
 		{#each stats as stat (stat.label)}
 			<div class="stat-card">
 				<span class="stat-label">{stat.label}</span>
@@ -119,25 +120,22 @@
 <style>
 	:global(body) {
 		font-family: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-		background: #0b1210;
 		color: #e4f3ea;
 	}
 
 	.page {
 		position: relative;
 		min-height: 100vh;
-		padding: 32px clamp(20px, 4vw, 56px) 72px;
+		padding: 82px clamp(20px, 4vw, 56px) 72px;
 	}
 
 	.hero {
-		max-width: 580px;
-		margin: 0 auto 48px;
-		text-align: center;
 		position: relative;
-		z-index: 1;
-		display: flex;
-		flex-direction: column;
-		gap: 18px;
+		max-width: 1200px;
+		margin: 0 auto 48px;
+		padding: 0px 16px 32px;
+		text-align: center;
+		z-index: 2;
 	}
 	.hero h1 {
 		font-size: clamp(2.4rem, 4vw, 3.5rem);
@@ -147,21 +145,32 @@
 	.hero p {
 		color: #b5c9bf;
 		line-height: 28px;
-		max-width: 456px;
+		max-width: 506px;
 		margin: 0 auto;
 		font-weight: 400;
 		font-size: 1.1rem;
+	}
+	.hero .copy {
+		position: relative;
+		z-index: 2;
+		display: grid;
+		gap: 18px;
+		max-width: 630px;
+		margin: 0 auto;
 	}
 
 	.logo-card {
 		display: grid;
 		place-items: center;
 		margin-bottom: 56px;
+		position: relative;
+		z-index: 3;
 	}
 	.logo-img {
 		position: relative;
 		width: 128px;
 		height: 200px;
+		opacity: 0.9;
 		object-fit: contain;
 		z-index: 1;
 	}
@@ -171,7 +180,7 @@
 		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 		gap: 18px;
 		max-width: 720px;
-		margin: 0 auto 24px;
+		margin: 200px auto 24px;
 		position: relative;
 		z-index: 1;
 	}
@@ -200,28 +209,113 @@
 	.actions.justify-center {
 		justify-content: center;
 	}
-	.actions.justify-start {
-		justify-content: flex-start;
-	}
+	/* Scoped CTA style for the homepage actions bar (transparent pill) */
 	.actions .cta {
 		background: rgba(255, 255, 255, 0.04);
 		color: #e4f3ea;
 		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 		padding: 10px 16px;
 		border-radius: 14px;
+		transition: background 120ms ease, box-shadow 120ms ease, filter 120ms ease;
 	}
 	.actions .cta:hover {
-		transform: translateY(-1px);
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-		filter: brightness(1.02);
+		background: rgba(255, 255, 255, 0.08);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+		filter: brightness(1.05);
 	}
 	.hero .ghost {
 		margin: 0 auto;
 		width: 167px;
 	}
+	.uni-shell {
+		position: absolute;
+		top: 180px;
+		left: 50%;
+		width: 100vw;
+		height: 580px;
+		transform: translateX(-50%);
+		overflow: hidden;
+		z-index: 1;
+		pointer-events: none;
+	}
+	.uni-bg {
+		position: absolute;
+		top: 0;
+		width: 50vw;
+		height: 823px;
+	}
+	.uni-left {
+		left: 0;
+		top: -141px;
+		height: 906px;
+	}
+	.uni-right {
+		right: 0;
+		top: -27px;
+		height: 823px;
+	}
+	.uni-mask {
+		position: absolute;
+		top: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 320px;
+		height: 100%;
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			rgba(0, 0, 0, 0.25) 10%,
+			rgba(0, 0, 0, 0.8) 30%,
+			rgba(0, 0, 0, 1) 50%,
+			rgba(0, 0, 0, 0.8) 70%,
+			rgba(0, 0, 0, 0.25) 90%,
+			transparent 100%
+		);
+		filter: blur(20px);
+		pointer-events: none;
+		z-index: 2;
+	}
+	.uni-mask-bottom {
+		position: absolute;
+		bottom: -40px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 120vw;
+		height: 220px;
+		background: linear-gradient(
+			to bottom,
+			rgba(2, 9, 3, 0) 0%,
+			rgba(2, 9, 3, 0.35) 25%,
+			rgba(2, 9, 3, 0.6) 50%,
+			rgba(2, 9, 3, 0.85) 75%,
+			rgba(2, 9, 3, 1) 100%
+		);
+		filter: blur(24px);
+		pointer-events: none;
+		z-index: 2;
+	}
+	.uni-mask-top {
+		position: absolute;
+		top: -60px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 120vw;
+		height: 220px;
+		background: linear-gradient(
+			to top,
+			rgba(7, 7, 7, 0) 0%,
+			rgba(7, 7, 7, 0.35) 25%,
+			rgba(7, 7, 7, 0.65) 50%,
+			rgba(7, 7, 7, 0.9) 75%,
+			rgba(7, 7, 7, 1) 100%
+		);
+		filter: blur(24px);
+		pointer-events: none;
+		z-index: 2;
+	}
 
 	.ghost {
-		padding: 5px;
+		padding: 5px 10px;
 		border-radius: 12px;
 		border: 1px solid #26e05f;
 		background: linear-gradient(140deg, #2af270, #1fc85d);
@@ -233,104 +327,8 @@
 	}
 	.ghost:hover {
 		border-color: #30ff7a;
-		transform: translateY(-1px);
-	}
-
-	.section {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-		gap: 24px;
-		align-items: center;
-		max-width: 1100px;
-		margin: 0 auto 80px;
-		position: relative;
-		z-index: 1;
-	}
-
-	.section-copy h2 {
-		font-size: 1.8rem;
-		margin-bottom: 10px;
-	}
-	.section-copy p {
-		color: #b5c9bf;
-		line-height: 1.7;
-		max-width: 520px;
-	}
-
-	.section-card {
-		background: linear-gradient(160deg, rgba(18, 26, 22, 0.85), rgba(16, 24, 20, 0.65));
-		border: 1px solid #1b2f24;
-		border-radius: 18px;
-		padding: 18px;
-		box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3);
-		display: grid;
-		gap: 16px;
-	}
-
-	.buckets {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-		gap: 12px;
-	}
-	.bucket-label {
-		color: #89a398;
-		font-weight: 600;
-		margin-bottom: 8px;
-	}
-	.icon-row {
-		display: flex;
-		gap: 10px;
-		flex-wrap: wrap;
-	}
-	.pill {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		padding: 10px 12px;
-		border-radius: 12px;
-		background: linear-gradient(140deg, rgba(24, 35, 30, 0.9), rgba(15, 24, 20, 0.9));
-		border: 1px solid #23382c;
-		color: #e4f3ea;
-		font-weight: 700;
-		font-size: 0.95rem;
-		min-width: 46px;
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-	}
-	.icon-pill img {
-		width: 26px;
-		height: 26px;
-		object-fit: contain;
-	}
-
-	.token-table {
-		display: grid;
-		gap: 10px;
-	}
-	.token-row {
-		display: grid;
-		grid-template-columns: 1fr repeat(3, minmax(80px, auto));
-		gap: 10px;
-		align-items: center;
-		padding: 10px 12px;
-		border-radius: 12px;
-		background: linear-gradient(120deg, rgba(16, 24, 20, 0.9), rgba(20, 32, 26, 0.75));
-		border: 1px solid #23382c;
-	}
-	.token-pill {
-		justify-self: start;
-		padding: 8px 12px;
-		border-radius: 10px;
-		border: 1px dashed #2af270;
-		color: #9deab7;
-		font-weight: 700;
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-	}
-	.token-price {
-		color: #e4f3ea;
-		font-weight: 600;
-		text-align: right;
+		background: linear-gradient(140deg, #32ff7a, #24d567);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 	}
 
 	.why {
@@ -357,15 +355,6 @@
 		margin-top: 12px;
 		justify-items: center;
 	}
-	.why-card {
-		background: linear-gradient(160deg, rgba(16, 24, 20, 0.85), rgba(18, 26, 22, 0.65));
-		border: 1px solid #1b2f24;
-		border-radius: 18px;
-		padding: 16px;
-		display: grid;
-		gap: 10px;
-		box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3);
-	}
 	.cta-block {
 		display: grid;
 		place-items: center;
@@ -373,16 +362,10 @@
 		gap: 12px;
 		margin: 0 auto 48px;
 	}
-	.cta-block p {
-		color: #a8bdb2;
-	}
 
 	/* Footer handled globally */
 
 	@media (max-width: 820px) {
-		.section {
-			grid-template-columns: 1fr;
-		}
 		.why-grid--row1 {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
@@ -397,48 +380,4 @@
 			justify-items: stretch;
 		}
 	}
-.hero {
-	position: relative;
-	min-height: 100vh;
-	overflow: hidden;
-}
-
-.graphics {
-	position: absolute;
-	inset: 0;
-	display: flex;
-	justify-content: space-between;
-	pointer-events: none;
-	z-index: 1;
-
-	-webkit-mask-image: linear-gradient(
-		to right,
-		transparent 0%,
-		black 15%,
-		black 45%,
-		transparent 100%
-	);
-	mask-image: linear-gradient(
-		to right,
-		transparent 0%,
-		black 15%,
-		black 85%,
-		transparent 100%
-	);
-}
-
-.uni {
-	width: 48%;
-	height: 100%;
-}
-
-.copy {
-	position: relative;
-	z-index: 2;
-	max-width: 600px;
-	margin: 0 auto;
-	padding-top: 15vh;
-	text-align: center;
-}
-
 </style>

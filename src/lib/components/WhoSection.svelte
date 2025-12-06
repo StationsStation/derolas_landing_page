@@ -32,7 +32,7 @@
 <style>
 	.who {
 		max-width: 1100px;
-		margin: 80px auto;
+		margin: 130px auto;
 		text-align: center;
 	}
 	.who h2 {

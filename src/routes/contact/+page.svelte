@@ -21,12 +21,14 @@
 	}
 </script>
 
-<main class="page">
-	<div class="halo halo-1" aria-hidden="true"></div>
-	<div class="halo halo-2" aria-hidden="true"></div>
-
-	<section class="hero">
-		<h1>Talk to the Derolas Team</h1>
+<main class="page grid gap-6 px-6 pt-15 pb-18 max-w-[1100px] mx-auto justify-center">
+	<section class="page-hero pb-8">
+		<h1 class="text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight text-center">
+			Talk to the Derolas Team
+		</h1>
+		<p class="lede text-lg md:text-xl text-center">
+			Reach out directly or drop us a note—our team will get back quickly.
+		</p>
 	</section>
 
 	<section class="channel-card">
@@ -74,7 +76,7 @@
 					placeholder="Tell us what you're building and how Derolas fits in."
 					bind:value={form.message}
 					required
-				/>
+				></textarea>
 			</label>
 			<button class="cta" type="submit">Send Message</button>
 		</form>
@@ -82,17 +84,6 @@
 </main>
 
 <style>
-	.hero {
-		text-align: center;
-		margin-bottom: 28px;
-		position: relative;
-		z-index: 1;
-	}
-	.hero h1 {
-		font-size: clamp(2.2rem, 3.8vw, 2.8rem);
-		font-weight: 600;
-	}
-
 	.channel-card {
 		max-width: 760px;
 		margin: 0 auto 24px;
@@ -147,7 +138,6 @@
 
 	.form-shell {
 		max-width: 900px;
-		margin: 0 auto;
 		position: relative;
 		z-index: 1;
 	}

@@ -68,7 +68,7 @@
 
 <section class="diagram-section" bind:this={sectionEl}>
 	<div class="copy-column">
-		{#each items as item, i}
+		{#each items as item, i (item.title)}
 			<article
 				class:active={i === activeIndex}
 				class="copy-card step"
@@ -85,7 +85,7 @@
 		{#if activeItem}
 			<div class="feature-figure">
 				<div class="figure-stack">
-					{#each items as item, i}
+					{#each items as item, i (item.title)}
 						<div class={`figure-state ${i === activeIndex ? 'is-active' : ''}`}>
 							<div class="diagram-card">
 								<img src={item.diagramSrc} alt={`${item.title} diagram`} />

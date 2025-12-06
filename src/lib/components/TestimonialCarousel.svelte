@@ -78,6 +78,7 @@
 		line-height: 32px;
 		color: #dfeee7;
 		font-weight: 400;
+		min-height: 250px;
 		padding-bottom: 24px;
 	}
 	.quote-meta {
@@ -136,6 +137,7 @@
 	@media (max-width: 640px) {
 		.quote-card {
 			gap: 12px;
+			width: 100%;
 		}
 		.quote-nav {
 			justify-content: space-between;

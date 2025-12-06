@@ -5,7 +5,7 @@
 <script lang="ts">
 	import eBallerIcon from '$lib/assets/8baller.png';
 	import robotOrangeIcon from '$lib/assets/robot_orange_icon.svg';
-	import xLogo from '$lib/assets/x_logo.svg';
+	import XLink from '$lib/components/XLink.svelte';
 
 	const members = [
 		{
@@ -27,12 +27,11 @@
 	];
 </script>
 
-<main class="page">
-	<div class="halo halo-1" aria-hidden="true"></div>
-	<div class="halo halo-2" aria-hidden="true"></div>
-
-	<section class="hero">
-		<h1>Meet Derolas Team</h1>
+<main class="page grid gap-6 px-6 pt-15  pb-18 max-w-[1100px] mx-auto">
+	<section class="page-hero pb-8">
+		<h1 class="text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight text-center">
+			Meet Derolas Team
+		</h1>
 	</section>
 
 	<section class="team">
@@ -43,11 +42,8 @@
 				</div>
 				<div class="member-body">
 					<h2>{member.name}</h2>
-					<p>{member.bio}</p>
-					<a class="ghost small" href={member.link} rel="noreferrer" target="_blank">
-						<img src={xLogo} alt="X" class="chip-icon" />
-						{member.handle}
-					</a>
+					<p class="pb-8 pt-8">{member.bio}</p>
+					<XLink handle={member.handle} href={member.link} />
 				</div>
 			</article>
 		{/each}
@@ -56,17 +52,6 @@
 </main>
 
 <style>
-	.hero {
-		text-align: center;
-		margin-bottom: 48px;
-		position: relative;
-		z-index: 1;
-	}
-	.hero h1 {
-		font-size: clamp(2.2rem, 3.8vw, 2.8rem);
-		font-weight: 600;
-	}
-
 	.team {
 		display: grid;
 		gap: 64px;
@@ -122,9 +107,7 @@
 	.avatar img {
 		position: relative;
 		z-index: 1;
-		width: 120px;
-		height: 120px;
-		object-fit: contain;
+		width: 100%;
 	}
 
 	.member-body {

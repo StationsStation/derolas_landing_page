@@ -1,4 +1,5 @@
 <script lang="ts">
+import { onDestroy, onMount } from 'svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -40,13 +41,28 @@
 		balTvlSharePct: poolTvlSharePct,
 		balVolumeSharePct: poolVolumeSharePct
 	};
+
+onMount(() => {
+	const body = document.body;
+	const prevChartAccent = body.style.getPropertyValue('--chart-accent');
+	body.style.setProperty('--chart-accent', '#3bea83');
+
+	onDestroy(() => {
+		if (prevChartAccent) {
+			body.style.setProperty('--chart-accent', prevChartAccent);
+		} else {
+			body.style.removeProperty('--chart-accent');
+		}
+	});
+});
 </script>
 
-<main class="page-shell">
-	<section class="hero">
-		<p class="eyebrow">Derolas Performance</p>
-		<h1>Derolas Performance</h1>
-		<p class="lede">
+<main class="grid gap-6 px-6 pt-15 pb-18 max-w-[1100px] mx-auto">
+	<section class="page-hero pb-8">
+		<h1 class="text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight text-center">
+			Derolas Performance
+		</h1>
+		<p class="lede text-lg md:text-xl text-center text-[#b5c9bf] font-normal">
 			The Balancer pool is the heart of the Derolas ecosystem, providing liquidity and capturing value
 			for holders.
 		</p>
@@ -62,7 +78,7 @@
 					aria-label="Select Balancer pool"
 					class="select"
 				>
-					{#each data.pools as pool}
+					{#each data.pools as pool (pool.id)}
 						<option value={pool.id}>{pool.name}</option>
 					{/each}
 				</select>
@@ -209,45 +225,6 @@
 </main>
 
 <style>
-	:global(body) {
-		background: #0c1311;
-		color: #e4f3ea;
-		--chart-accent: #3bea83;
-	}
-	.page-shell {
-		padding: 48px 24px 72px;
-		max-width: 1100px;
-		margin: 0 auto;
-		display: grid;
-		gap: 24px;
-	}
-	.hero {
-		display: grid;
-		gap: 12px;
-		text-align: center;
-		place-items: center;
-	}
-	h1 {
-		font-size: clamp(2rem, 4vw, 2.8rem);
-		font-weight: 600;
-	}
-	.lede {
-		color: #b5c9bf;
-		line-height: 1.6;
-		max-width: 720px;
-	}
-	.eyebrow {
-		color: #7aa793;
-		font-size: 0.9rem;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-	}
-	.api {
-		color: #8fb6a6;
-		font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-			'Liberation Mono', 'Courier New', monospace;
-		font-size: 0.95rem;
-	}
 	.chart-card {
 		border: 1px solid #1e2a26;
 		background: linear-gradient(160deg, rgba(17, 26, 22, 0.9), rgba(11, 17, 15, 0.95));
@@ -277,10 +254,6 @@
 		color: #f3b0a0;
 		padding: 12px 16px;
 		border-radius: 12px;
-	}
-	.small-note {
-		font-size: 0.85rem;
-		color: #7f968d;
 	}
 	.chart-shell {
 		width: 100%;
@@ -384,10 +357,5 @@
 	.select option {
 		background: #0f1513;
 		color: #e5f6ed;
-	}
-	@media (max-width: 720px) {
-		.page-shell {
-			padding: 32px 18px 56px;
-		}
 	}
 </style>
