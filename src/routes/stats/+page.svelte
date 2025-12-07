@@ -1,5 +1,5 @@
 <script lang="ts">
-import { onDestroy, onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -23,7 +23,7 @@ import { onDestroy, onMount } from 'svelte';
 	$: derolasVolume = latestVolumes.reduce((sum, item) => sum + (item.derolas_volume ?? 0), 0);
 	$: poolTvl = data.poolMetrics?.tvl_usd;
 	$: poolVolumeSharePct = totalVolume > 0 ? (derolasVolume / totalVolume) * 100 : undefined;
-	$: poolTvlSharePct = totalVolume > 0 ? (poolTvl ?? 0) / totalVolume * 100 : undefined;
+	$: poolTvlSharePct = totalVolume > 0 ? ((poolTvl ?? 0) / totalVolume) * 100 : undefined;
 
 	$: metrics = {
 		currentApr: data.poolMetrics?.current_apr,
@@ -42,19 +42,19 @@ import { onDestroy, onMount } from 'svelte';
 		balVolumeSharePct: poolVolumeSharePct
 	};
 
-onMount(() => {
-	const body = document.body;
-	const prevChartAccent = body.style.getPropertyValue('--chart-accent');
-	body.style.setProperty('--chart-accent', '#3bea83');
+	onMount(() => {
+		const body = document.body;
+		const prevChartAccent = body.style.getPropertyValue('--chart-accent');
+		body.style.setProperty('--chart-accent', '#3bea83');
 
-	onDestroy(() => {
-		if (prevChartAccent) {
-			body.style.setProperty('--chart-accent', prevChartAccent);
-		} else {
-			body.style.removeProperty('--chart-accent');
-		}
+		onDestroy(() => {
+			if (prevChartAccent) {
+				body.style.setProperty('--chart-accent', prevChartAccent);
+			} else {
+				body.style.removeProperty('--chart-accent');
+			}
+		});
 	});
-});
 </script>
 
 <main class="grid gap-6 px-6 pt-15 pb-18 max-w-[1100px] mx-auto">
