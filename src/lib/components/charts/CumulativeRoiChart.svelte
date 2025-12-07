@@ -100,9 +100,6 @@
 					spline: {
 						strokeWidth: 2.5
 					},
-					area: {
-						opacity: 0.3
-					},
 					highlight: {
 						points: {
 							stroke: '#ffffff',
@@ -166,8 +163,13 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 16px 24px;
+		padding: 12px 16px;
 		margin: 0 auto;
+	}
+	@media (min-width: 640px) {
+		.chart-container {
+			padding: 16px 24px;
+		}
 	}
 	.chart-container :global(svg),
 	.chart-container :global(.lc-root-container) {

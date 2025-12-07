@@ -35,19 +35,59 @@ def stub_get_volumes():
         series={
             'balancer': [
                 VolumesSeriesPoint(
-                    total_volume=1000.0 + i * 150,
-                    derolas_volume=200.0 + i * 30,
-                    derolas_volume_share_pct=20.0,
+                    total_volume=15278212.90 + i * 150000,
+                    derolas_volume=108195.24 + i * 5000,
+                    derolas_volume_share_pct=0.71,
                     timestamp_start=_days_ago(3 - i),
                     timestamp_end=_days_ago(2 - i),
                 )
                 for i in range(3)
             ],
-            'uniswap': [
+            'derive': [
                 VolumesSeriesPoint(
-                    total_volume=600.0 + i * 120,
-                    derolas_volume=60.0 + i * 12,
-                    derolas_volume_share_pct=10.0,
+                    total_volume=5000000.0 + i * 100000,
+                    derolas_volume=50000.0 + i * 1000,
+                    derolas_volume_share_pct=1.0,
+                    timestamp_start=_days_ago(3 - i),
+                    timestamp_end=_days_ago(2 - i),
+                )
+                for i in range(3)
+            ],
+            'cow_swap': [
+                VolumesSeriesPoint(
+                    total_volume=3000000.0 + i * 80000,
+                    derolas_volume=30000.0 + i * 800,
+                    derolas_volume_share_pct=1.0,
+                    timestamp_start=_days_ago(3 - i),
+                    timestamp_end=_days_ago(2 - i),
+                )
+                for i in range(3)
+            ],
+            'ethereal': [
+                VolumesSeriesPoint(
+                    total_volume=2000000.0 + i * 60000,
+                    derolas_volume=20000.0 + i * 600,
+                    derolas_volume_share_pct=1.0,
+                    timestamp_start=_days_ago(3 - i),
+                    timestamp_end=_days_ago(2 - i),
+                )
+                for i in range(3)
+            ],
+            'hyperliquid': [
+                VolumesSeriesPoint(
+                    total_volume=4000000.0 + i * 90000,
+                    derolas_volume=40000.0 + i * 900,
+                    derolas_volume_share_pct=1.0,
+                    timestamp_start=_days_ago(3 - i),
+                    timestamp_end=_days_ago(2 - i),
+                )
+                for i in range(3)
+            ],
+            'thalex': [
+                VolumesSeriesPoint(
+                    total_volume=1500000.0 + i * 50000,
+                    derolas_volume=15000.0 + i * 500,
+                    derolas_volume_share_pct=1.0,
                     timestamp_start=_days_ago(3 - i),
                     timestamp_end=_days_ago(2 - i),
                 )

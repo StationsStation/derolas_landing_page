@@ -5,8 +5,45 @@
 	import CumulativeRoiChart from '$lib/components/charts/CumulativeRoiChart.svelte';
 	import SimpleLineChart from '$lib/components/charts/SimpleLineChart.svelte';
 	import type { PageData } from './$types';
+	
+	// Exchange icons
+	import balancerLogo from '$lib/assets/balancer_logo.svg';
+	import deriveLogo from '$lib/assets/derive_logo.svg';
 
 	export let data: PageData;
+
+	// Exchange configuration - easily maintainable array
+	interface ExchangeConfig {
+		id: string; // Key used in API response (e.g., 'balancer', 'uniswap')
+		name: string; // Display name (e.g., 'Balancer', 'CoW Swap')
+		icon?: string; // Path to icon, or undefined if no icon
+		chain?: string; // Optional chain identifier (e.g., 'base', 'ethereum')
+	}
+
+	const EXCHANGE_CONFIG: ExchangeConfig[] = [
+		{ id: 'balancer', name: 'Balancer', icon: balancerLogo, chain: 'base' },
+		{ id: 'derive', name: 'Derive', icon: deriveLogo },
+		{ id: 'cow_swap', name: 'CoW Swap', icon: undefined },
+		{ id: 'ethereal', name: 'Ethereal', icon: undefined },
+		{ id: 'hyperliquid', name: 'Hyperliquid', icon: undefined },
+		{ id: 'thalex', name: 'Thalex', icon: undefined }
+	];
+
+	// Show all configured exchanges (maintainable - just update EXCHANGE_CONFIG array)
+	// If an exchange doesn't have data, it will still show but metrics will be empty
+	$: availableExchanges = EXCHANGE_CONFIG;
+
+	// Default to first available exchange, or first in config if none available
+	$: defaultExchange = availableExchanges.length > 0 
+		? availableExchanges[0].id 
+		: EXCHANGE_CONFIG[0]?.id ?? 'balancer';
+	
+	let selectedExchange = 'balancer'; // Initial value
+	
+	// Update selectedExchange when available exchanges load (only if current selection is invalid)
+	$: if (availableExchanges.length > 0 && !availableExchanges.find(ex => ex.id === selectedExchange)) {
+		selectedExchange = defaultExchange;
+	}
 
 	// Safe initialization with proper null checks
 	const pools = data?.pools ?? [];
@@ -24,49 +61,33 @@
 	const formatPct = (value?: number) =>
 		value === undefined ? '—' : `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
 
-	// Helper functions with error handling
-	const processLatestVolumes = () => {
+	// Get selected exchange config
+	$: selectedExchangeConfig = EXCHANGE_CONFIG.find((ex) => ex.id === selectedExchange) ?? EXCHANGE_CONFIG[0];
+
+	// Get volumes for selected exchange
+	$: selectedExchangeVolumes = (() => {
 		try {
-			return data?.volumes?.series !== undefined
-				? Object.values(data.volumes.series).flatMap((series) => {
-						if (!Array.isArray(series)) return [];
-						const last = series.at(-1);
-						return last ? [last] : [];
-					})
-				: [];
+			if (!data?.volumes?.series || !selectedExchange) return [];
+			const series = data.volumes.series[selectedExchange];
+			return Array.isArray(series) ? series : [];
 		} catch (err) {
-			console.error('Error processing volumes:', err);
+			console.error('Error getting exchange volumes:', err);
 			return [];
 		}
-	};
+	})();
 
-	const calculateTotalVolume = (volumes: unknown[]) => {
-		try {
-			return volumes.reduce((sum: number, item: any) => sum + ((item?.total_volume ?? 0) || 0), 0);
-		} catch (err) {
-			console.error('Error calculating total volume:', err);
-			return 0;
-		}
-	};
+	// Get latest volume point for selected exchange
+	$: latestVolumePoint = selectedExchangeVolumes.length > 0 
+		? selectedExchangeVolumes[selectedExchangeVolumes.length - 1] 
+		: null;
 
-	const calculateDerolasVolume = (volumes: unknown[]) => {
-		try {
-			return volumes.reduce((sum: number, item: any) => sum + ((item?.derolas_volume ?? 0) || 0), 0);
-		} catch (err) {
-			console.error('Error calculating derolas volume:', err);
-			return 0;
-		}
-	};
+	// Calculate metrics for selected exchange
+	$: exchangeTotalVolume = latestVolumePoint?.total_volume ?? 0;
+	$: exchangeDerolasVolume = latestVolumePoint?.derolas_volume ?? 0;
+	$: exchangeVolumeSharePct = latestVolumePoint?.derolas_volume_share_pct ?? undefined;
+	$: poolTvl = poolMetrics?.tvl_usd ?? undefined;
 
-	const calculateVolumeSharePct = (derolasVol: number, totalVol: number) => {
-		try {
-			return totalVol > 0 && derolasVol >= 0 ? (derolasVol / totalVol) * 100 : undefined;
-		} catch (err) {
-			console.error('Error calculating pool volume share:', err);
-			return undefined;
-		}
-	};
-
+	// Calculate TVL share percentage
 	const calculateTvlSharePct = (tvl: number | undefined, totalVol: number) => {
 		try {
 			return totalVol > 0 && tvl !== undefined ? ((tvl ?? 0) / totalVol) * 100 : undefined;
@@ -76,13 +97,9 @@
 		}
 	};
 
-	$: latestVolumes = processLatestVolumes();
-	$: totalVolume = calculateTotalVolume(latestVolumes);
-	$: derolasVolume = calculateDerolasVolume(latestVolumes);
-	$: poolTvl = poolMetrics?.tvl_usd ?? undefined;
-	$: poolVolumeSharePct = calculateVolumeSharePct(derolasVolume, totalVolume);
-	$: poolTvlSharePct = calculateTvlSharePct(poolTvl, totalVolume);
+	$: poolTvlSharePct = calculateTvlSharePct(poolTvl, exchangeTotalVolume);
 
+	// Dynamic metrics based on selected exchange
 	$: metrics = {
 		currentApr: poolMetrics?.current_apr,
 		fees24h: poolMetrics?.fees_24h_usd,
@@ -90,14 +107,14 @@
 		tvlUsd: poolMetrics?.tvl_usd,
 		currentSharePrice: poolMetrics?.current_share_price_usd,
 		currentRoi: poolMetrics?.current_roi_pct,
-		balancerBaseTvl: totalVolume || undefined,
+		exchangeTvl: exchangeTotalVolume > 0 ? exchangeTotalVolume : undefined,
 		derolasPoolTvl: poolTvl,
-		totalVolumeBase: totalVolume || undefined,
-		derolasPoolVolume: derolasVolume || undefined,
-		avgBalancerEfficiency: undefined,
-		derolasPoolEfficiency: undefined,
-		balTvlSharePct: poolTvlSharePct,
-		balVolumeSharePct: poolVolumeSharePct
+		totalVolumeOnExchange: exchangeTotalVolume > 0 ? exchangeTotalVolume : undefined,
+		derolasPoolVolume: exchangeDerolasVolume > 0 ? exchangeDerolasVolume : undefined,
+		avgExchangeEfficiency: undefined, // Placeholder for future calculation
+		derolasPoolEfficiency: undefined, // Placeholder for future calculation
+		exchangeTvlSharePct: poolTvlSharePct,
+		exchangeVolumeSharePct: exchangeVolumeSharePct
 	};
 
 	const LOOKBACK_DAYS = 30;
@@ -298,7 +315,7 @@
 	}
 </script>
 
-<main class="mx-auto grid max-w-[1100px] gap-6 px-6 pt-15 pb-18">
+<main class="mx-auto grid max-w-[1100px] gap-6 px-4 sm:px-6 pt-15 pb-18">
 	<section class="page-hero pb-8">
 		<h1 class="text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight text-center">
 			Derolas Performance
@@ -474,40 +491,77 @@
 	<section class="exchange-section">
 		<h2>Derolas Exchange Share Metrics</h2>
 		<p class="exchange-subtitle">
-			Insights into the share of the Derolas pool relative to total Balancer volume.
+			The percentage share of Derolas pool activity relative to the total trading volume on the selected exchange.
 		</p>
+		
+		<!-- Exchange Selector -->
+		<div class="exchange-selector">
+			{#each availableExchanges as exchange (exchange.id)}
+				<button
+					type="button"
+					class="exchange-button"
+					class:active={selectedExchange === exchange.id}
+					on:click={() => selectedExchange = exchange.id}
+					aria-label="Select {exchange.name}"
+					aria-pressed={selectedExchange === exchange.id}
+				>
+					{#if exchange.icon}
+						<img src={exchange.icon} alt="" class="exchange-icon" />
+					{/if}
+					<span class="exchange-name">{exchange.name}</span>
+				</button>
+			{/each}
+		</div>
+
+		<!-- Metrics Grid -->
 		<div class="metrics-grid wide">
 			<div class="metric-card">
-				<p class="muted">Balancer Base TVL</p>
-				<p class="metric-value">{formatUsd(metrics.balancerBaseTvl)}</p>
+				<p class="muted">
+					{selectedExchangeConfig.name} {selectedExchangeConfig.chain 
+						? selectedExchangeConfig.chain.charAt(0).toUpperCase() + selectedExchangeConfig.chain.slice(1) 
+						: ''} TVL
+				</p>
+				<p class="metric-value">{formatUsd(metrics.exchangeTvl)}</p>
 			</div>
 			<div class="metric-card">
 				<p class="muted">Derolas Pool TVL</p>
 				<p class="metric-value">{formatUsd(metrics.derolasPoolTvl)}</p>
 			</div>
 			<div class="metric-card">
-				<p class="muted">Total Volume on Balancer Base</p>
-				<p class="metric-value">{formatUsd(metrics.totalVolumeBase)}</p>
+				<p class="muted">
+					Total Volume on {selectedExchangeConfig.name} {selectedExchangeConfig.chain 
+						? selectedExchangeConfig.chain.charAt(0).toUpperCase() + selectedExchangeConfig.chain.slice(1) 
+						: ''}
+				</p>
+				<p class="metric-value">{formatUsd(metrics.totalVolumeOnExchange)}</p>
 			</div>
 			<div class="metric-card">
 				<p class="muted">Volume from Derolas Pool</p>
 				<p class="metric-value">{formatUsd(metrics.derolasPoolVolume)}</p>
 			</div>
 			<div class="metric-card">
-				<p class="muted">Average Balancer Capital Efficiency Ratio</p>
-				<p class="metric-value">{metrics.avgBalancerEfficiency ?? '—'}</p>
+				<p class="muted">Average {selectedExchangeConfig.name} Capital Efficiency Ratio</p>
+				<p class="metric-value">{metrics.avgExchangeEfficiency ?? '—'}</p>
 			</div>
 			<div class="metric-card">
 				<p class="muted">Derolas Pool Capital Efficiency Ratio</p>
 				<p class="metric-value">{metrics.derolasPoolEfficiency ?? '—'}</p>
 			</div>
 			<div class="metric-card">
-				<p class="muted">Total % of Bal TVL on Base is Derolas</p>
-				<p class="metric-value">{formatPct(metrics.balTvlSharePct)}</p>
+				<p class="muted">
+					Total % of {selectedExchangeConfig.name} TVL {selectedExchangeConfig.chain 
+						? 'on ' + selectedExchangeConfig.chain.charAt(0).toUpperCase() + selectedExchangeConfig.chain.slice(1) 
+						: ''} is Derolas
+				</p>
+				<p class="metric-value">{formatPct(metrics.exchangeTvlSharePct)}</p>
 			</div>
 			<div class="metric-card">
-				<p class="muted">Total % of Bal Volume on Base is Derolas</p>
-				<p class="metric-value">{formatPct(metrics.balVolumeSharePct)}</p>
+				<p class="muted">
+					Total % of {selectedExchangeConfig.name} Volume {selectedExchangeConfig.chain 
+						? 'on ' + selectedExchangeConfig.chain.charAt(0).toUpperCase() + selectedExchangeConfig.chain.slice(1) 
+						: ''} is Derolas
+				</p>
+				<p class="metric-value">{formatPct(metrics.exchangeVolumeSharePct)}</p>
 			</div>
 		</div>
 	</section>
@@ -518,11 +572,17 @@
 		border: 1px solid #1e2a26;
 		background: linear-gradient(160deg, rgba(17, 26, 22, 0.9), rgba(11, 17, 15, 0.95));
 		border-radius: 18px;
-		padding: 24px 32px;
+		padding: 16px 20px;
 		display: flex;
 		flex-direction: column;
-		gap: 16px;
+		gap: 12px;
 		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+	}
+	@media (min-width: 640px) {
+		.chart-card {
+			padding: 24px 32px;
+			gap: 16px;
+		}
 	}
 	.chart-head {
 		display: flex;
@@ -546,10 +606,15 @@
 	.chart-shell {
 		width: 100%;
 		flex: 1;
-		min-height: 460px;
+		min-height: 300px;
 		display: flex;
 		align-items: stretch;
 		justify-content: stretch;
+	}
+	@media (min-width: 640px) {
+		.chart-shell {
+			min-height: 460px;
+		}
 	}
 	.placeholder {
 		border: 1px dashed rgba(159, 214, 185, 0.25);
@@ -566,50 +631,158 @@
 	}
 	.metrics-grid {
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-columns: 1fr;
 		gap: 12px;
 	}
+	@media (min-width: 640px) {
+		.metrics-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
 	.metrics-grid.wide {
-		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		grid-template-columns: 1fr;
+		gap: 12px;
+	}
+	@media (min-width: 640px) {
+		.metrics-grid.wide {
+			grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		}
 	}
 	.metric-card {
 		border: 1px solid #1e2a26;
 		background: linear-gradient(150deg, rgba(14, 22, 19, 0.82), rgba(11, 17, 15, 0.94));
 		border-radius: 14px;
-		padding: 18px;
+		padding: 14px;
 		display: grid;
 		gap: 6px;
 		text-align: center;
 	}
+	@media (min-width: 640px) {
+		.metric-card {
+			padding: 18px;
+		}
+	}
 	.metric-value {
-		font-size: 1.6rem;
+		font-size: 1.4rem;
 		font-weight: 650;
 		color: #e8f7ef;
 	}
+	@media (min-width: 640px) {
+		.metric-value {
+			font-size: 1.6rem;
+		}
+	}
 	.mini-chart-row {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		grid-template-columns: 1fr;
 		gap: 14px;
 	}
+	@media (min-width: 640px) {
+		.mini-chart-row {
+			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		}
+	}
 	.chart-card.mini {
-		min-height: 360px;
-		padding: 24px 44px;
+		min-height: 300px;
+		padding: 16px 20px;
+	}
+	@media (min-width: 640px) {
+		.chart-card.mini {
+			min-height: 360px;
+			padding: 24px 44px;
+		}
 	}
 	.exchange-section {
 		display: grid;
-		gap: 14px;
+		gap: 20px;
 		text-align: center;
 		margin-top: 10px;
 	}
 	.exchange-section h2 {
-		font-size: 1.4rem;
+		font-size: 1.2rem;
 		font-weight: 650;
+	}
+	@media (min-width: 640px) {
+		.exchange-section h2 {
+			font-size: 1.4rem;
+		}
 	}
 	.exchange-subtitle {
 		color: #8ea9a0;
 		max-width: 720px;
 		margin: 0 auto;
 		line-height: 1.6;
+		font-size: 0.9rem;
+		padding: 0 8px;
+	}
+	@media (min-width: 640px) {
+		.exchange-subtitle {
+			font-size: 1rem;
+			padding: 0;
+		}
+	}
+	.exchange-selector {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		justify-content: center;
+		align-items: center;
+		padding: 12px 0;
+	}
+	@media (min-width: 640px) {
+		.exchange-selector {
+			gap: 10px;
+			padding: 16px 0;
+		}
+	}
+	.exchange-button {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 8px 12px;
+		border: 1px solid #1e2a26;
+		background: linear-gradient(150deg, rgba(14, 22, 19, 0.82), rgba(11, 17, 15, 0.94));
+		border-radius: 10px;
+		color: #9bb4aa;
+		font-size: 0.85rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		white-space: nowrap;
+	}
+	@media (min-width: 640px) {
+		.exchange-button {
+			gap: 8px;
+			padding: 10px 16px;
+			font-size: 0.95rem;
+		}
+	}
+	.exchange-button:hover {
+		border-color: rgba(59, 234, 131, 0.3);
+		background: linear-gradient(150deg, rgba(20, 30, 26, 0.9), rgba(14, 22, 19, 0.95));
+		color: #b5c9bf;
+		transform: translateY(-1px);
+	}
+	.exchange-button.active {
+		border-color: #3bea83;
+		background: linear-gradient(150deg, rgba(20, 30, 26, 0.95), rgba(14, 22, 19, 0.98));
+		color: #3bea83;
+		box-shadow: 0 0 12px rgba(59, 234, 131, 0.2);
+	}
+	.exchange-icon {
+		width: 18px;
+		height: 18px;
+		object-fit: contain;
+		flex-shrink: 0;
+	}
+	@media (min-width: 640px) {
+		.exchange-icon {
+			width: 20px;
+			height: 20px;
+		}
+	}
+	.exchange-name {
+		font-weight: 500;
 	}
 	.pool-select {
 		display: grid;

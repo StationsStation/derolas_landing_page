@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { LineChart } from 'layerchart';
+	import { LineChart, Area } from 'layerchart';
 
 	export let title: string;
 	export let data: { x: string | Date; y: number }[] = [];
@@ -116,7 +116,21 @@
 						}
 					}
 				}}
-			/>
+			>
+				{#snippet belowMarks()}
+					<Area
+						x="x"
+						y="value"
+						data={chartData}
+						props={{
+							area: {
+								fill: '#3bea83',
+								opacity: 0.15
+							}
+						}}
+					/>
+				{/snippet}
+			</LineChart>
 		</div>
 		{#if yLabel}
 			<p class="chart-label" aria-label="Y-axis label">{yLabel}</p>
@@ -150,8 +164,13 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 16px 24px;
+		padding: 12px 16px;
 		margin: 0 auto;
+	}
+	@media (min-width: 640px) {
+		.chart-container {
+			padding: 16px 24px;
+		}
 	}
 	.chart-container :global(svg),
 	.chart-container :global(.lc-root-container) {
@@ -159,6 +178,13 @@
 		height: 100%;
 		max-width: 100%;
 		flex-shrink: 0;
+	}
+	/* Area fill styling with gradient effect using mask */
+	.chart-container :global(.lc-area-path) {
+		fill: #3bea83 !important;
+		opacity: 0.25 !important;
+		mask: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0) 100%);
+		-webkit-mask: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0) 100%);
 	}
 	/* Axis label styling - ensure Y-axis labels are visible */
 	.chart-container :global(.lc-axis-tick-label),
