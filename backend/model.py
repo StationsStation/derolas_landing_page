@@ -10,11 +10,6 @@ from typing import Dict, List, Optional
 from pydantic import BaseModel, Field
 
 
-class TimeSeriesPoint(BaseModel):
-    timestamp: datetime
-    value: float
-
-
 class VolumesSeriesPoint(BaseModel):
     total_volume: float = Field(
         ..., description='Total volume on venue over the window.'
@@ -45,9 +40,35 @@ class PoolSummary(BaseModel):
     symbol: Optional[str] = Field(None, description='Pool symbol / ticker')
 
 
+class SharePricePoint(BaseModel):
+    timestamp: datetime
+    share_price_usd: float
+
+
+class AssetRoiPoint(BaseModel):
+    timestamp: datetime
+    cumulative_roi_pct: float
+
+
+class TvlPoint(BaseModel):
+    timestamp: datetime
+    tvl_usd: float
+
+
+class FeesPoint(BaseModel):
+    timestamp: datetime
+    fees_usd: float
+
+
+class LpSharesPoint(BaseModel):
+    timestamp: datetime
+    shares: float
+
+
 class AssetRoiSeries(BaseModel):
     asset_symbol: str = Field(..., example='wETH')
-    series: List[TimeSeriesPoint] = Field(
+    asset_name: Optional[str] = Field(None, description='Optional human-friendly label')
+    series: List[AssetRoiPoint] = Field(
         ..., description='Cumulative ROI (%) over time for this asset'
     )
 
@@ -66,18 +87,18 @@ class PoolMetricsResponse(BaseModel):
     current_roi_pct: float = Field(
         ..., description='Current ROI in percent (may be negative)', example=-14.88
     )
-    share_price_series: List[TimeSeriesPoint] = Field(
+    share_price_series: List[SharePricePoint] = Field(
         ..., description='For "Derolas Share Price" chart'
     )
     asset_cumulative_roi_series: List[AssetRoiSeries] = Field(
         ..., description='For "Cumulative ROI of Assets in Bundle" multi-line chart'
     )
-    tvl_series: List[TimeSeriesPoint] = Field(
+    tvl_series: List[TvlPoint] = Field(
         ..., description='TVL (USD) over previous 30 days'
     )
-    fees_series: List[TimeSeriesPoint] = Field(
+    fees_series: List[FeesPoint] = Field(
         ..., description='Fees (USD) over previous 30 days'
     )
-    lp_shares_series: List[TimeSeriesPoint] = Field(
+    lp_shares_series: List[LpSharesPoint] = Field(
         ..., description='Derolas LP shares over previous 30 days'
     )

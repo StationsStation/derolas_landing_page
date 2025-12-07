@@ -1,37 +1,95 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
+	import { DefaultService, OpenAPI, type PoolMetricsResponse } from '$lib/api';
+	import SharePriceChart from '$lib/components/charts/SharePriceChart.svelte';
+	import CumulativeRoiChart from '$lib/components/charts/CumulativeRoiChart.svelte';
+	import SimpleLineChart from '$lib/components/charts/SimpleLineChart.svelte';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
-	$: primaryPool = data.pools.at(0);
-	let selectedPool = primaryPool?.id ?? '';
+	// Safe initialization with proper null checks
+	const pools = data?.pools ?? [];
+	let selectedPool = pools.length > 0 ? (pools[0]?.id ?? '') : '';
+	let poolMetrics: PoolMetricsResponse | null = data?.poolMetrics ?? null;
+	let loading = false;
+	let loadError: string | null = data?.error ?? null;
+
+	$: primaryPool = pools.length > 0 
+		? (pools.find((p) => p?.id === selectedPool) ?? pools[0] ?? null)
+		: null;
 
 	const formatUsd = (value?: number) =>
 		value === undefined ? '—' : `$${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 	const formatPct = (value?: number) =>
 		value === undefined ? '—' : `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
 
-	$: latestVolumes =
-		data.volumes?.series !== undefined
-			? Object.values(data.volumes.series).flatMap((series) => {
-					const last = series.at(-1);
-					return last ? [last] : [];
-				})
-			: [];
-	$: totalVolume = latestVolumes.reduce((sum, item) => sum + (item.total_volume ?? 0), 0);
-	$: derolasVolume = latestVolumes.reduce((sum, item) => sum + (item.derolas_volume ?? 0), 0);
-	$: poolTvl = data.poolMetrics?.tvl_usd;
-	$: poolVolumeSharePct = totalVolume > 0 ? (derolasVolume / totalVolume) * 100 : undefined;
-	$: poolTvlSharePct = totalVolume > 0 ? ((poolTvl ?? 0) / totalVolume) * 100 : undefined;
+	// Helper functions with error handling
+	const processLatestVolumes = () => {
+		try {
+			return data?.volumes?.series !== undefined
+				? Object.values(data.volumes.series).flatMap((series) => {
+						if (!Array.isArray(series)) return [];
+						const last = series.at(-1);
+						return last ? [last] : [];
+					})
+				: [];
+		} catch (err) {
+			console.error('Error processing volumes:', err);
+			return [];
+		}
+	};
+
+	const calculateTotalVolume = (volumes: unknown[]) => {
+		try {
+			return volumes.reduce((sum: number, item: any) => sum + ((item?.total_volume ?? 0) || 0), 0);
+		} catch (err) {
+			console.error('Error calculating total volume:', err);
+			return 0;
+		}
+	};
+
+	const calculateDerolasVolume = (volumes: unknown[]) => {
+		try {
+			return volumes.reduce((sum: number, item: any) => sum + ((item?.derolas_volume ?? 0) || 0), 0);
+		} catch (err) {
+			console.error('Error calculating derolas volume:', err);
+			return 0;
+		}
+	};
+
+	const calculateVolumeSharePct = (derolasVol: number, totalVol: number) => {
+		try {
+			return totalVol > 0 && derolasVol >= 0 ? (derolasVol / totalVol) * 100 : undefined;
+		} catch (err) {
+			console.error('Error calculating pool volume share:', err);
+			return undefined;
+		}
+	};
+
+	const calculateTvlSharePct = (tvl: number | undefined, totalVol: number) => {
+		try {
+			return totalVol > 0 && tvl !== undefined ? ((tvl ?? 0) / totalVol) * 100 : undefined;
+		} catch (err) {
+			console.error('Error calculating pool TVL share:', err);
+			return undefined;
+		}
+	};
+
+	$: latestVolumes = processLatestVolumes();
+	$: totalVolume = calculateTotalVolume(latestVolumes);
+	$: derolasVolume = calculateDerolasVolume(latestVolumes);
+	$: poolTvl = poolMetrics?.tvl_usd ?? undefined;
+	$: poolVolumeSharePct = calculateVolumeSharePct(derolasVolume, totalVolume);
+	$: poolTvlSharePct = calculateTvlSharePct(poolTvl, totalVolume);
 
 	$: metrics = {
-		currentApr: data.poolMetrics?.current_apr,
-		fees24h: data.poolMetrics?.fees_24h_usd,
-		totalShares: data.poolMetrics?.total_shares,
-		tvlUsd: data.poolMetrics?.tvl_usd,
-		currentSharePrice: data.poolMetrics?.current_share_price_usd,
-		currentRoi: data.poolMetrics?.current_roi_pct,
+		currentApr: poolMetrics?.current_apr,
+		fees24h: poolMetrics?.fees_24h_usd,
+		totalShares: poolMetrics?.total_shares,
+		tvlUsd: poolMetrics?.tvl_usd,
+		currentSharePrice: poolMetrics?.current_share_price_usd,
+		currentRoi: poolMetrics?.current_roi_pct,
 		balancerBaseTvl: totalVolume || undefined,
 		derolasPoolTvl: poolTvl,
 		totalVolumeBase: totalVolume || undefined,
@@ -42,22 +100,205 @@
 		balVolumeSharePct: poolVolumeSharePct
 	};
 
-	onMount(() => {
-		const body = document.body;
-		const prevChartAccent = body.style.getPropertyValue('--chart-accent');
-		body.style.setProperty('--chart-accent', '#3bea83');
+	const LOOKBACK_DAYS = 30;
 
-		onDestroy(() => {
-			if (prevChartAccent) {
-				body.style.setProperty('--chart-accent', prevChartAccent);
-			} else {
-				body.style.removeProperty('--chart-accent');
+	const fetchMetrics = async (poolId: string) => {
+		if (!poolId) return;
+		loading = true;
+		loadError = null;
+		try {
+			const end = new Date();
+			const start = new Date(end);
+			start.setDate(end.getDate() - LOOKBACK_DAYS);
+			poolMetrics = await DefaultService.getPoolMetrics(
+				poolId,
+				start.toISOString(),
+				end.toISOString(),
+				'1d'
+			);
+		} catch (err) {
+			loadError = err instanceof Error ? err.message : 'Failed to load pool metrics';
+		} finally {
+			loading = false;
+		}
+	};
+
+	onMount(() => {
+		try {
+			OpenAPI.BASE = data?.apiBase ?? '';
+			const body = document.body;
+			if (body) {
+				const prevChartAccent = body.style.getPropertyValue('--chart-accent');
+				body.style.setProperty('--chart-accent', '#3bea83');
+
+				onDestroy(() => {
+					try {
+						if (body) {
+							if (prevChartAccent) {
+								body.style.setProperty('--chart-accent', prevChartAccent);
+							} else {
+								body.style.removeProperty('--chart-accent');
+							}
+						}
+					} catch (err) {
+						console.error('Error restoring chart accent:', err);
+					}
+				});
 			}
-		});
+			if (!poolMetrics && selectedPool) {
+				fetchMetrics(selectedPool);
+			}
+		} catch (err) {
+			console.error('Error in onMount:', err);
+			loadError = err instanceof Error ? err.message : 'Failed to initialize page';
+		}
 	});
+
+	$: if (selectedPool && poolMetrics?.pool_id !== selectedPool && !loading) {
+		try {
+			fetchMetrics(selectedPool);
+		} catch (err) {
+			console.error('Error in reactive statement:', err);
+			loadError = err instanceof Error ? err.message : 'Failed to fetch metrics';
+		}
+	}
+
+	// Helper functions for series processing
+	const getSharePriceSeries = (metrics: PoolMetricsResponse | null) => {
+		try {
+			const series = Array.isArray(metrics?.share_price_series) ? metrics.share_price_series : [];
+			console.log('[Stats] Share price series:', series.length, 'points', series.slice(0, 3));
+			return series;
+		} catch (err) {
+			console.error('Error processing share price series:', err);
+			return [];
+		}
+	};
+
+	const getRoiSeries = (metrics: PoolMetricsResponse | null) => {
+		try {
+			return Array.isArray(metrics?.asset_cumulative_roi_series)
+				? metrics.asset_cumulative_roi_series
+				: [];
+		} catch (err) {
+			console.error('Error processing ROI series:', err);
+			return [];
+		}
+	};
+
+	// Helper function to safely parse timestamp
+	const parseTimestamp = (timestamp: string | number | Date | undefined): Date | null => {
+		try {
+			if (!timestamp) return null;
+			const date = new Date(timestamp);
+			if (isNaN(date.getTime())) return null;
+			return date;
+		} catch {
+			return null;
+		}
+	};
+
+	// Helper function to validate and sanitize numeric values
+	const sanitizeValue = (value: unknown, min: number | null = 0): number | null => {
+		if (typeof value !== 'number' || isNaN(value) || !isFinite(value)) {
+			return null;
+		}
+		// If min is null, allow any finite number (useful for ROI which can be negative)
+		if (min === null) {
+			return value;
+		}
+		return Math.max(value, min);
+	};
+
+	const getTvlSeries = (metrics: PoolMetricsResponse | null) => {
+		try {
+			if (!Array.isArray(metrics?.tvl_series)) {
+				console.log('[Stats] TVL series not an array:', metrics?.tvl_series);
+				return [];
+			}
+
+			const series = metrics.tvl_series
+				.map((p) => {
+					if (!p) return null;
+					const date = parseTimestamp(p.timestamp);
+					const value = sanitizeValue(p.tvl_usd);
+					if (!date || value === null) {
+						console.warn('[Stats] Invalid TVL point:', p);
+						return null;
+					}
+					return { x: date, y: value };
+				})
+				.filter((point): point is { x: Date; y: number } => point !== null)
+				.sort((a, b) => a.x.getTime() - b.x.getTime());
+			
+			console.log('[Stats] TVL series processed:', series.length, 'points');
+			return series;
+		} catch (err) {
+			console.error('Error processing TVL series:', err);
+			return [];
+		}
+	};
+
+	const getFeesSeries = (metrics: PoolMetricsResponse | null) => {
+		try {
+			if (!Array.isArray(metrics?.fees_series)) return [];
+
+			return metrics.fees_series
+				.map((p) => {
+					if (!p) return null;
+					const date = parseTimestamp(p.timestamp);
+					const value = sanitizeValue(p.fees_usd);
+					if (!date || value === null) return null;
+					return { x: date, y: value };
+				})
+				.filter((point): point is { x: Date; y: number } => point !== null)
+				.sort((a, b) => a.x.getTime() - b.x.getTime());
+		} catch (err) {
+			console.error('Error processing fees series:', err);
+			return [];
+		}
+	};
+
+	const getLpSharesSeries = (metrics: PoolMetricsResponse | null) => {
+		try {
+			if (!Array.isArray(metrics?.lp_shares_series)) return [];
+
+			return metrics.lp_shares_series
+				.map((p) => {
+					if (!p) return null;
+					const date = parseTimestamp(p.timestamp);
+					const value = sanitizeValue(p.shares);
+					if (!date || value === null) return null;
+					return { x: date, y: value };
+				})
+				.filter((point): point is { x: Date; y: number } => point !== null)
+				.sort((a, b) => a.x.getTime() - b.x.getTime());
+		} catch (err) {
+			console.error('Error processing LP shares series:', err);
+			return [];
+		}
+	};
+
+	$: sharePriceSeries = getSharePriceSeries(poolMetrics);
+	$: roiSeries = getRoiSeries(poolMetrics);
+	$: tvlSeries = getTvlSeries(poolMetrics);
+	$: feesSeries = getFeesSeries(poolMetrics);
+	$: lpSharesSeries = getLpSharesSeries(poolMetrics);
+
+	// Debug: Log when poolMetrics changes
+	$: if (poolMetrics) {
+		console.log('[Stats] PoolMetrics received:', {
+			pool_id: poolMetrics.pool_id,
+			share_price_series_length: poolMetrics.share_price_series?.length,
+			tvl_series_length: poolMetrics.tvl_series?.length,
+			fees_series_length: poolMetrics.fees_series?.length,
+			lp_shares_series_length: poolMetrics.lp_shares_series?.length,
+			roi_series_length: poolMetrics.asset_cumulative_roi_series?.length,
+		});
+	}
 </script>
 
-<main class="grid gap-6 px-6 pt-15 pb-18 max-w-[1100px] mx-auto">
+<main class="mx-auto grid max-w-[1100px] gap-6 px-6 pt-15 pb-18">
 	<section class="page-hero pb-8">
 		<h1 class="text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight text-center">
 			Derolas Performance
@@ -83,30 +324,47 @@
 					{/each}
 				</select>
 			</div>
+			{#if loading}
+				<p class="muted text-sm">Loading metrics…</p>
+			{/if}
 		</section>
 	{/if}
 
-	{#if data.error}
-		<section class="alert">Unable to load data: {data.error}</section>
+	{#if loadError}
+		<section class="alert">Unable to load data: {loadError}</section>
 	{/if}
 
-	<section class="chart-card">
-		<div class="chart-head">
-			<div>
-				<p class="label">Derolas Share Price</p>
-				{#if primaryPool}
-					<p class="muted">{primaryPool.name}</p>
-				{/if}
+	{#if loading && !poolMetrics}
+		<section class="chart-card">
+			<div class="chart-head">
+				<div>
+					<p class="label">Derolas Share Price</p>
+					{#if primaryPool}
+						<p class="muted">{primaryPool.name}</p>
+					{/if}
+				</div>
 			</div>
-		</div>
-
-		<div class="chart-shell placeholder">
-			<div class="placeholder-content">
-				<p class="label">Chart coming soon</p>
-				<p class="muted">Connecting to the metrics API; visuals will render once data is available.</p>
+			<div class="chart-skeleton" aria-label="Loading chart data">
+				<div class="skeleton-bar"></div>
+				<div class="skeleton-bar"></div>
+				<div class="skeleton-bar"></div>
+				<div class="skeleton-bar"></div>
+				<div class="skeleton-bar"></div>
 			</div>
-		</div>
-	</section>
+		</section>
+	{:else if poolMetrics}
+		<section class="chart-card">
+			<div class="chart-head">
+				<div>
+					<p class="label">Derolas Share Price</p>
+					{#if primaryPool}
+						<p class="muted">{primaryPool.name}</p>
+					{/if}
+				</div>
+			</div>
+			<SharePriceChart data={sharePriceSeries} />
+		</section>
+	{/if}
 
 	<section class="metrics-grid">
 		<div class="metric-card">
@@ -135,52 +393,83 @@
 		</div>
 	</section>
 
-	<section class="chart-card">
-		<div class="chart-head">
-			<p class="label">Cumulative ROI of Assets in Bundle</p>
-		</div>
-		<div class="chart-shell placeholder">
-			<div class="placeholder-content">
-				<p class="label">Chart coming soon</p>
-				<p class="muted">ROI breakdown will display here.</p>
-			</div>
-		</div>
-	</section>
-
-	<section class="mini-chart-row">
-		<div class="chart-card mini">
+	{#if loading && !poolMetrics}
+		<section class="chart-card">
 			<div class="chart-head">
-				<p class="label">TVL (USD) over previous 30 Days</p>
+				<p class="label">Cumulative ROI of Assets in Bundle</p>
 			</div>
-			<div class="chart-shell placeholder">
-				<div class="placeholder-content">
-					<p class="label">Chart coming soon</p>
+			<div class="chart-skeleton" aria-label="Loading chart data">
+				<div class="skeleton-bar"></div>
+				<div class="skeleton-bar"></div>
+				<div class="skeleton-bar"></div>
+				<div class="skeleton-bar"></div>
+				<div class="skeleton-bar"></div>
+			</div>
+		</section>
+
+		<section class="mini-chart-row">
+			<div class="chart-card mini">
+				<div class="chart-head">
+					<p class="label">TVL (USD) over previous 30 Days</p>
+				</div>
+				<div class="chart-skeleton" aria-label="Loading chart data">
+					<div class="skeleton-bar"></div>
+					<div class="skeleton-bar"></div>
+					<div class="skeleton-bar"></div>
 				</div>
 			</div>
-		</div>
-		<div class="chart-card mini">
-			<div class="chart-head">
-				<p class="label">Fees (USD) over previous 30 Days</p>
-			</div>
-			<div class="chart-shell placeholder">
-				<div class="placeholder-content">
-					<p class="label">Chart coming soon</p>
+			<div class="chart-card mini">
+				<div class="chart-head">
+					<p class="label">Fees (USD) over previous 30 Days</p>
+				</div>
+				<div class="chart-skeleton" aria-label="Loading chart data">
+					<div class="skeleton-bar"></div>
+					<div class="skeleton-bar"></div>
+					<div class="skeleton-bar"></div>
 				</div>
 			</div>
-		</div>
-	</section>
+		</section>
 
-	<section class="chart-card">
-		<div class="chart-head">
-			<p class="label">Derolas LP Shares Amount</p>
-		</div>
-		<div class="chart-shell placeholder">
-			<div class="placeholder-content">
-				<p class="label">Chart coming soon</p>
-				<p class="muted">LP share trends will render here.</p>
+		<section class="chart-card">
+			<div class="chart-head">
+				<p class="label">Derolas LP Shares Amount</p>
 			</div>
-		</div>
-	</section>
+			<div class="chart-skeleton" aria-label="Loading chart data">
+				<div class="skeleton-bar"></div>
+				<div class="skeleton-bar"></div>
+				<div class="skeleton-bar"></div>
+			</div>
+		</section>
+	{:else if poolMetrics}
+		<section class="chart-card">
+			<div class="chart-head">
+				<p class="label">Cumulative ROI of Assets in Bundle</p>
+			</div>
+			<CumulativeRoiChart data={roiSeries} />
+		</section>
+
+		<section class="mini-chart-row">
+			<div class="chart-card mini">
+				<div class="chart-head">
+					<p class="label">TVL (USD) over previous 30 Days</p>
+				</div>
+				<SimpleLineChart title="TVL (USD)" data={tvlSeries} yLabel="TVL (USD)" />
+			</div>
+			<div class="chart-card mini">
+				<div class="chart-head">
+					<p class="label">Fees (USD) over previous 30 Days</p>
+				</div>
+				<SimpleLineChart title="Fees (USD)" data={feesSeries} yLabel="Fees (USD)" />
+			</div>
+		</section>
+
+		<section class="chart-card">
+			<div class="chart-head">
+				<p class="label">Derolas LP Shares Amount</p>
+			</div>
+			<SimpleLineChart title="LP Shares" data={lpSharesSeries} yLabel="Shares" />
+		</section>
+	{/if}
 
 	<section class="exchange-section">
 		<h2>Derolas Exchange Share Metrics</h2>
@@ -229,12 +518,11 @@
 		border: 1px solid #1e2a26;
 		background: linear-gradient(160deg, rgba(17, 26, 22, 0.9), rgba(11, 17, 15, 0.95));
 		border-radius: 18px;
-		padding: 18px;
+		padding: 24px 32px;
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
+		gap: 16px;
 		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
-		min-height: 520px;
 	}
 	.chart-head {
 		display: flex;
@@ -305,6 +593,7 @@
 	}
 	.chart-card.mini {
 		min-height: 360px;
+		padding: 24px 44px;
 	}
 	.exchange-section {
 		display: grid;
@@ -357,5 +646,68 @@
 	.select option {
 		background: #0f1513;
 		color: #e5f6ed;
+	}
+	.chart-skeleton {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-around;
+		gap: 8px;
+		height: 320px;
+		padding: 20px 0;
+		animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+	}
+	.chart-card.mini .chart-skeleton {
+		height: 240px;
+	}
+	.skeleton-bar {
+		flex: 1;
+		background: linear-gradient(
+			180deg,
+			rgba(59, 234, 131, 0.15) 0%,
+			rgba(59, 234, 131, 0.08) 50%,
+			rgba(59, 234, 131, 0.15) 100%
+		);
+		border-radius: 4px 4px 0 0;
+		min-height: 20px;
+		max-height: 90%;
+		animation: skeleton-wave 1.5s ease-in-out infinite;
+	}
+	.skeleton-bar:nth-child(1) {
+		height: 45%;
+		animation-delay: 0s;
+	}
+	.skeleton-bar:nth-child(2) {
+		height: 70%;
+		animation-delay: 0.1s;
+	}
+	.skeleton-bar:nth-child(3) {
+		height: 55%;
+		animation-delay: 0.2s;
+	}
+	.skeleton-bar:nth-child(4) {
+		height: 85%;
+		animation-delay: 0.3s;
+	}
+	.skeleton-bar:nth-child(5) {
+		height: 60%;
+		animation-delay: 0.4s;
+	}
+	@keyframes skeleton-wave {
+		0%,
+		100% {
+			opacity: 0.4;
+		}
+		50% {
+			opacity: 0.8;
+		}
+	}
+	@keyframes pulse {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.95;
+		}
 	}
 </style>
