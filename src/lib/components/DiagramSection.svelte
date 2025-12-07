@@ -1,7 +1,9 @@
+<script context="module" lang="ts">
+	export type DiagramItem = { title: string; copy: string; diagramSrc: string };
+</script>
+
 <script lang="ts">
 	import { onMount } from 'svelte';
-
-	export type DiagramItem = { title: string; copy: string; diagramSrc: string };
 
 	export let items: DiagramItem[] = [];
 

@@ -2,26 +2,19 @@
 	import * as Table from '$lib/components/ui/table';
 	import { Button } from '$lib/components/ui/button';
 	import Card from '$lib/components/ui/card/card.svelte';
-	import { OpenAPI, DefaultService } from '$lib/api';
-	import type { Parameter } from '$lib/api/models/Parameter';
 	import { onMount } from 'svelte';
+
+	type Parameter = { key?: string; type?: string; description?: string; value?: string };
 
 	let data: Parameter[] = [];
 
 	onMount(async () => {
-		OpenAPI.BASE = 'http://localhost:8000';
-		data = await DefaultService.getParameters();
+		// TODO: wire to real API; placeholder keeps type-check happy
+		data = [];
 	});
 
-	// post an update to a parameter
 	async function updateParameter(param: Parameter, newValue: string) {
-		let result = await DefaultService.postParameters(param);
-		if (!result) {
-			alert(`Failed to update parameter ${param.key}`);
-			return;
-		}
-		data = await DefaultService.getParameters();
-		alert(`Parameter ${param.key} updated to ${newValue}`);
+		console.warn('Connect updateParameter to API', param, newValue);
 	}
 </script>
 

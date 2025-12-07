@@ -1,7 +1,9 @@
+<script context="module" lang="ts">
+	export type WhoCard = { title: string; copy: string; icon?: string };
+</script>
+
 <script lang="ts">
 	import groupIcon from '$lib/assets/group_icon.svg';
-
-	export type WhoCard = { title: string; copy: string; icon?: string };
 
 	export let title = 'Who Derolas is for';
 	export let description = 'Possible short description.';

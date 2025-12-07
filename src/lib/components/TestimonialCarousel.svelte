@@ -1,13 +1,15 @@
-<script lang="ts">
-	import leftArrow from '$lib/assets/left_arrow_icon.svg';
-	import rightArrow from '$lib/assets/right_arrow_logo.svg';
-
+<script context="module" lang="ts">
 	export type Testimonial = {
 		quote: string;
 		author: string;
 		role: string;
 		icon?: string;
 	};
+</script>
+
+<script lang="ts">
+	import leftArrow from '$lib/assets/left_arrow_icon.svg';
+	import rightArrow from '$lib/assets/right_arrow_logo.svg';
 
 	export let items: Testimonial[] = [];
 
