@@ -47,7 +47,7 @@
 							/>
 							<Button
 								variant="secondary"
-								onclick={() => updateParameter(parameter, parameter.value)}
+								onclick={() => updateParameter(parameter, parameter.value ?? '')}
 							>
 								Update
 							</Button>
