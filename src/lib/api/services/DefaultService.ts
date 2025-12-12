@@ -2,13 +2,25 @@
 /* istanbul ignore file */
 /* tslint:disable */
  
+import type { ExchangesResponse } from '../models/ExchangesResponse';
 import type { PoolMetricsResponse } from '../models/PoolMetricsResponse';
-import type { PoolSummary } from '../models/PoolSummary';
+import type { PoolsResponse } from '../models/PoolsResponse';
 import type { VolumesResponse } from '../models/VolumesResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class DefaultService {
+    /**
+     * List exchanges / venues
+     * @returns ExchangesResponse All exchanges / venues available in metrics
+     * @throws ApiError
+     */
+    public static listExchanges(): CancelablePromise<ExchangesResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/exchanges',
+        });
+    }
     /**
      * Volume by exchange and Derolas share
      * @returns VolumesResponse Time series volume data and derived exchange share metrics
@@ -22,10 +34,10 @@ export class DefaultService {
     }
     /**
      * List pools
-     * @returns PoolSummary All pools
+     * @returns PoolsResponse All pools
      * @throws ApiError
      */
-    public static listPools(): CancelablePromise<Array<PoolSummary>> {
+    public static listPools(): CancelablePromise<PoolsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/pools',

@@ -8,7 +8,10 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { AssetRoiSeries } from './models/AssetRoiSeries';
+export { Exchange } from './models/Exchange';
+export type { ExchangesResponse } from './models/ExchangesResponse';
 export type { PoolMetricsResponse } from './models/PoolMetricsResponse';
+export type { PoolsResponse } from './models/PoolsResponse';
 export type { PoolSummary } from './models/PoolSummary';
 export type { TimeSeriesPoint } from './models/TimeSeriesPoint';
 export type { VolumesResponse } from './models/VolumesResponse';

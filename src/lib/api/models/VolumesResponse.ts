@@ -1,9 +1,11 @@
 /* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
- 
-import type { VolumesSeriesPoint } from './VolumesSeriesPoint';
+/* eslint-disable */
 export type VolumesResponse = {
-    series: Record<string, Array<VolumesSeriesPoint>>;
+    /**
+     * Flat list of points (each point includes exchange_id)
+     */
+    series: Record<string, any>;
 };
 
