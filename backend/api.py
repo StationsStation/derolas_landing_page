@@ -1,6 +1,7 @@
+from datetime import datetime
 from flask import Flask, jsonify
 from flask_cors import CORS
-from .generated.models import PoolSummary, VolumesResponse, VolumesSeriesPoint, PoolMetricsResponse
+from .generated.models import PoolSummary, VolumesResponse, VolumesSeriesPoint, PoolMetricsResponse, ExchangesResponse
 app = Flask(__name__)
 CORS(app)
 PARAMETERS = {'max_connections': {'key': 'max_connections', 'value': '10', 'description': 'Maximum number of allowed connections', 'type': 'integer'}, 'timeout': {'key': 'timeout', 'value': '30', 'description': 'Timeout in seconds', 'type': 'integer'}}
@@ -14,48 +15,54 @@ def stub_get_volumes():
         series={
             'venue1': [
                 VolumesSeriesPoint(
+                    exchange_id="thalex",
                     total_volume=1000.0,
                     derolas_volume=200.0,
                     derolas_volume_share_pct=20.0,
-                    timestamp_start=None,
-                    timestamp_end=None
+                    timestamp_start=datetime.now(),
+                    timestamp_end=datetime.now()
                 ),
                 VolumesSeriesPoint(
+                    exchange_id="thalex",
                     total_volume=1500.0,
                     derolas_volume=300.0,
                     derolas_volume_share_pct=20.0,
-                    timestamp_start=None,
-                    timestamp_end=None
+                    timestamp_start=datetime.now(),
+                    timestamp_end=datetime.now()
                 ),
                 VolumesSeriesPoint(
+                    exchange_id="thalex",
                     total_volume=2000.0,
                     derolas_volume=400.0,
                     derolas_volume_share_pct=20.0,
-                    timestamp_start=None,
-                    timestamp_end=None
+                    timestamp_start=datetime.now(),
+                    timestamp_end=datetime.now()
                 ),
             ],
             'venue2': [
                 VolumesSeriesPoint(
+                    exchange_id="derive",
                     total_volume=500.0,
                     derolas_volume=50.0,
                     derolas_volume_share_pct=10.0,
-                    timestamp_start=None,
-                    timestamp_end=None
+                    timestamp_start=datetime.now(),
+                    timestamp_end=datetime.now()
                 ),
                 VolumesSeriesPoint(
+                    exchange_id="derive",
                     total_volume=800.0,
                     derolas_volume=80.0,
                     derolas_volume_share_pct=10.0,
-                    timestamp_start=None,
-                    timestamp_end=None
+                    timestamp_start=datetime.now(),
+                    timestamp_end=datetime.now()
                 ),
                 VolumesSeriesPoint(
+                    exchange_id="derive",
                     total_volume=1200.0,
                     derolas_volume=120.0,
                     derolas_volume_share_pct=10.0,
-                    timestamp_start=None,
-                    timestamp_end=None
+                    timestamp_start=datetime.now(),
+                    timestamp_end=datetime.now()
                 ),
             ],
         }
@@ -106,5 +113,11 @@ def stub_get_pools_poolId_metrics(poolId):
             lp_shares_series=[]
         ).model_dump()
     )
+
+@app.get("/exchanges")
+def get_exchanges():
+    return jsonify(
+        ExchangesResponse(exchanges=[]).model_dump())
+
 
 

@@ -17,7 +17,7 @@ def stub_{method_lower}_{path_cleaned}():
     return {{"message": "This is a stub for {method} {path}"}}, 501
 """
 
-APP_PATH = "backend/app.py"
+APP_PATH = "backend/api.py"
 
 # Load OpenAPI spec and generate models
 with open("open-api-spec.yaml", "r") as f:
