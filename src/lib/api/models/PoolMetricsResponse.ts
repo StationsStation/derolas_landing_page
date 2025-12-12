@@ -1,9 +1,7 @@
 /* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
- 
 import type { AssetRoiSeries } from './AssetRoiSeries';
-import type { TimeSeriesPoint } from './TimeSeriesPoint';
 export type PoolMetricsResponse = {
     pool_id: string;
     /**
@@ -24,7 +22,10 @@ export type PoolMetricsResponse = {
     /**
      * For "Derolas Share Price" chart
      */
-    share_price_series: Array<TimeSeriesPoint>;
+    share_price_series: Array<{
+        timestamp: string;
+        share_price_usd: number;
+    }>;
     /**
      * For "Cumulative ROI of Assets in Bundle" multi-line chart
      */
@@ -32,14 +33,22 @@ export type PoolMetricsResponse = {
     /**
      * TVL (USD) over previous 30 days
      */
-    tvl_series: Array<TimeSeriesPoint>;
+    tvl_series: Array<{
+        timestamp: string;
+        tvl_usd: number;
+    }>;
     /**
      * Fees (USD) over previous 30 days
      */
-    fees_series: Array<TimeSeriesPoint>;
+    fees_series: Array<{
+        timestamp: string;
+        fees_usd: number;
+    }>;
     /**
      * Derolas LP shares over previous 30 days
      */
-    lp_shares_series: Array<TimeSeriesPoint>;
+    lp_shares_series: Array<{
+        timestamp: string;
+        shares: number;
+    }>;
 };
-

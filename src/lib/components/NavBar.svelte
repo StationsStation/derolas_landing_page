@@ -15,12 +15,12 @@
 		</a>
 
 		<div class="nav-links">
-			{#each navLinks as link}
+			{#each navLinks as link (link.href)}
 				<a class="nav-link" href={link.href}>{link.label}</a>
 			{/each}
 		</div>
 
-		<a class="cta" href="/contact">Talk to the Team</a>
+		<a class="ghost" href="/contact">Talk to the Team</a>
 	</nav>
 </div>
 
@@ -51,7 +51,7 @@
 	.nav-links {
 		display: flex;
 		justify-content: center;
-		gap: 28px;
+		gap: 40px;
 	}
 	.nav-link {
 		color: #d8e9df;
@@ -64,7 +64,7 @@
 		color: #2af270;
 	}
 
-	.nav .cta {
+	.nav .ghost {
 		justify-self: end;
 	}
 
@@ -76,8 +76,8 @@
 		.nav-links {
 			grid-column: 1 / -1;
 		}
-		.cta {
-			justify-self: start;
+		.ghost {
+			display: none;
 		}
 	}
 </style>
