@@ -28,7 +28,7 @@ check-diff:
 codegen:
 	poetry run datamodel-codegen \
 		--input open-api-spec.yaml \
-		--output backend/model.py \
+		--output backend/generated/models.py \
 		--disable-timestamp
 	poetry run python -m backend.generate
 	npx openapi-typescript-codegen --input open-api-spec.yaml --output src/lib/api --client axios

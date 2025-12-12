@@ -17,7 +17,7 @@ def test_models_all_generated(openapi_spec):
     """
     schemas = openapi_spec.get("components", {}).get("schemas", {})
     for schema_name in schemas.keys():
-        assert hasattr(backend.model, schema_name), f"Model {schema_name} not generated"
+        assert hasattr(backend.generated.models, schema_name), f"Model {schema_name} not generated"
 
 def test_app_instance():
     """

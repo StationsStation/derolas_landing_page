@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-from .model import PoolSummary, VolumesResponse, VolumesSeriesPoint, PoolMetricsResponse
+from .generated.models import PoolSummary, VolumesResponse, VolumesSeriesPoint, PoolMetricsResponse
 app = Flask(__name__)
 CORS(app)
 PARAMETERS = {'max_connections': {'key': 'max_connections', 'value': '10', 'description': 'Maximum number of allowed connections', 'type': 'integer'}, 'timeout': {'key': 'timeout', 'value': '30', 'description': 'Timeout in seconds', 'type': 'integer'}}
